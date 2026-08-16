@@ -69,8 +69,8 @@ def calculate_rmse(y_true, y_pred):
 if __name__ == "__main__":
     
     datasets = {
-        "Univariate": 'Regression/univariate data/24.csv',
-        "Bivariate": 'Regression/bivariate data/24.csv'
+        "Univariate": 'Regression/UnivariateData/24.csv',
+        "Bivariate": 'Regression/BivariateData/24.csv'
     }
     
     for name, path in datasets.items():
