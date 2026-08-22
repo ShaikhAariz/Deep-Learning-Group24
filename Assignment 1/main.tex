@@ -1,0 +1,213 @@
+
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{top=1in, bottom=1in, left=1in, right=1in}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{\textbf{CS601T: Deep Learning} \\ \Large Programming Assignment I Report}
+\author{\textbf{Group 24} \\ Shaikh Aariz (MC23BT030) \\ Sadguru Sai (MC23BT011) \\ Kailas Santhosh (MC23BT022)}
+\date{August 23, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+This report details the implementation of a single-layer perceptron from scratch using Python. The objective is to evaluate the learning capabilities of a fundamental neural network architecture across binary/multiclass classification and regression tasks using Gradient Descent.
+
+\section{Tasks Expected \& Learning Outcomes}
+\textbf{Expected Tasks:}
+\begin{itemize}
+    \item Implement a Perceptron classifier using Logistic and Tan-hyperbolic (Tanh) activations for Linearly Separable (LS) and Non-Linearly Separable (NLS) 3-class data using a One-vs-One (OVO) approach.
+    \item Implement a Perceptron with a linear activation function for Univariate (1D) and Bivariate (2D) regression data.
+    \item Generate performance metrics, decision boundary plots, and superimposed outputs.
+\end{itemize}
+\textbf{Learning Outcomes:}
+\begin{itemize}
+    \item Mathematical and programmatic understanding of Gradient Descent.
+    \item Understanding the "Bias Trick" and feature scaling to prevent the vanishing gradient problem.
+    \item Visualizing the representational limits of a single-layer linear model.
+\end{itemize}
+
+\section{Experimental Setup \& Inputs}
+For all tasks, the datasets were divided strictly into \textbf{70\% Training and 30\% Test} sets.
+\begin{itemize}
+    \item \textbf{Dataset 1 (Classification - LS):} 3 classes, 500 samples each. (Train: 1050, Test: 450).
+    \item \textbf{Dataset 2 (Classification - NLS):} 3 classes with 300, 500, and 1000 samples respectively. (Train: 1260, Test: 540).
+    \item \textbf{Dataset 1 \& 2 (Regression):} 1D and 2D continuous inputs scaled to zero mean and unit variance.
+\end{itemize}
+
+\section{Techniques Utilized}
+\begin{itemize}
+    \item \textbf{Feature Scaling (Standardization):} Applied to inputs to contour the loss landscape into a symmetrical shape, enabling optimal gradient descent and preventing activation saturation.
+    \item \textbf{One-vs-One (OVO):} The 3-class problem was decomposed into 3 binary classifiers (Class 0v1, 0v2, 1v2). The final prediction was generated via a majority voting scheme.
+    \item \textbf{Early Stopping Criterion:} Training halts if the MSE difference between consecutive epochs falls below a tolerance of $10^{-4}$.
+\end{itemize}
+
+\newpage
+\section{Classification Results \& Inferences}
+
+\subsection{Metrics on Test Data}
+
+\begin{table}[H]
+\centering
+\caption{Classification Test Metrics (Linearly Separable Data)}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Activation} & \textbf{Accuracy} & \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Mean F1} \\ \midrule
+\textbf{Logistic} & 99.33\% & 0 & 0.98 & 1.00 & 0.99 & 0.99 \\ 
+ & & 1 & 1.00 & 0.99 & 1.00 & \\
+ & & 2 & 1.00 & 0.99 & 0.99 & \\ \midrule
+\textbf{Tanh} & 99.56\% & 0 & 0.99 & 1.00 & 0.99 & 1.00 \\ 
+ & & 1 & 1.00 & 1.00 & 1.00 & \\
+ & & 2 & 1.00 & 0.99 & 0.99 & \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Classification Test Metrics (Non-Linearly Separable Data)}
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Activation} & \textbf{Accuracy} & \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} & \textbf{Mean F1} \\ \midrule
+\textbf{Logistic} & 55.56\% & 0 & 0.00 & 0.00 & 0.00 & 0.24 \\ 
+ & & 1 & 0.00 & 0.00 & 0.00 & \\
+ & & 2 & 0.56 & 1.00 & 0.71 & \\ \midrule
+\textbf{Tanh} & 55.56\% & 0 & 0.00 & 0.00 & 0.00 & 0.24 \\ 
+ & & 1 & 0.00 & 0.00 & 0.00 & \\
+ & & 2 & 0.56 & 1.00 & 0.71 & \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Classification Plots}
+% NOTE: Make sure the filenames in the \includegraphics{} commands match exactly what you uploaded to Overleaf!
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{ls_logistic_error.png} 
+        \caption{Logistic: Error vs Epochs}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{ls_logistic_combined.png}
+        \caption{Logistic: Combined Boundary}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{ls_tanh_error.png} 
+        \caption{Tanh: Error vs Epochs}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{ls_tanh_combined.png}
+        \caption{Tanh: Combined Boundary}
+    \end{subfigure}
+    \caption{Linearly Separable Data Plots}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{nls_logistic_error.png} 
+        \caption{Logistic: Error vs Epochs}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{nls_logistic_combined.png}
+        \caption{Logistic: Combined Boundary}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{nls_tanh_error.png} 
+        \caption{Tanh: Error vs Epochs}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.48\textwidth}
+        \includegraphics[width=\textwidth]{nls_tanh_combined.png}
+        \caption{Tanh: Combined Boundary}
+    \end{subfigure}
+    \caption{Non-Linearly Separable Data Plots}
+\end{figure}
+
+\subsection{Classification Inferences}
+\begin{itemize}
+    \item \textbf{Feature Scaling Success:} Without scaling, the large variance in Dataset 1 features pushed the $W^T X$ values to the extremes of the activation functions, causing gradients to vanish. After standardizing the inputs to $\mathcal{N}(0,1)$, gradient descent converged rapidly (within 250 epochs) achieving near 100\% accuracy for both Logistic and Tanh activations.
+    \item \textbf{Representational Limits on NLS Data:} The plots for Dataset 2 (NLS) reveal that the data forms concentric circles. A single-layer perceptron can only map a linear hyperplane (straight lines). Because it is mathematically impossible to linearly separate concentric circles, the algorithm defaults to predicting the majority class (Class 2) for almost all points to achieve the lowest possible MSE. This explains why the accuracy is stalled at 55.56\% with 0 precision for Classes 0 and 1.
+\end{itemize}
+
+\newpage
+\section{Regression Results \& Inferences}
+
+\subsection{Metrics on Train and Test Data}
+
+\begin{table}[H]
+\centering
+\caption{Regression Performance Metrics}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Dataset} & \textbf{Split} & \textbf{RMSE} & \textbf{\% RMSE} \\ \midrule
+\textbf{Univariate (1D)} & Training Data & 0.5560 & 20.31\% \\
+ & Test Data & 0.5634 & 20.69\% \\ \midrule
+\textbf{Bivariate (2D)} & Training Data & 1.4231 & 20.36\% \\
+ & Test Data & 1.4288 & 20.52\% \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Regression Plots}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{uni_error.png}
+        \caption{Univariate Error}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{uni_superimposed.png}
+        \caption{Univariate Superimposed}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{uni_scatter.png}
+        \caption{Univariate Target vs Pred}
+    \end{subfigure}
+    \caption{Univariate Regression Plots}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{bi_error.png}
+        \caption{Bivariate Error}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{bi_superimposed.png}
+        \caption{Bivariate Superimposed}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.32\textwidth}
+        \includegraphics[width=\textwidth]{bi_scatter.png}
+        \caption{Bivariate Target vs Pred}
+    \end{subfigure}
+    \caption{Bivariate Regression Plots}
+\end{figure}
+
+\subsection{Regression Inferences}
+\begin{itemize}
+    \item \textbf{Algorithmic Convergence:} The Average Error vs Epoch plots show a smooth exponential decay, flattening completely. This confirms the mathematical correctness of the gradient descent implementation; it successfully located the global minimum for a linear solution.
+    \item \textbf{Underfitting \& Structural Limitations:} As seen in the superimposed plots, the target outputs contain non-linear, wavy distributions. Because a linear activation function was mandated by the task, the network is fundamentally restricted to rendering straight lines (1D) or flat planes (2D). Consequently, the model structurally underfits the data. 
+    \item \textbf{Scatter Plot Behavior:} In a perfect model, the Target vs Predicted scatter plot aligns perfectly with the diagonal. Due to the underfitting mentioned above, the straight prediction line attempting to fit a sine-like curve manifests as symmetrical loops on the scatter plot.
+\end{itemize}
+
+\end{document}

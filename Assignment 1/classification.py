@@ -1,20 +1,38 @@
 import numpy as np
 import matplotlib.pyplot as plt
+#if we dont get any reply from sir then following code will be uncommented
+'''
+from pathlib import Path
+
+# 1. Get the directory where regression.py actually lives
+script_dir = Path(__file__).resolve().parent
+
+# 2. Build the absolute path to your CSV file
+path = script_dir / "Regression" / "UnivariateData" / "24.csv"
+
+# 3. Pass the robust path to your function
+X_tr, y_tr, X_te, y_te, X_raw, y_raw, X_m, X_s = preprocess_regression(path)
+
+'''
+
 
 # ==========================================
 # 1. PERCEPTRON FROM SCRATCH 
 # ==========================================
 class Perceptron:
-    def __init__(self, input_dim, activation='logistic', lr=0.01, epochs=1000):
-        # We add +1 to input_dim to account for the dummy x0=1 feature (Bias Trick)
+    # ADDED 'tol' for convergence criterion
+    def __init__(self, input_dim, activation='logistic', lr=0.1, epochs=2000, tol=1e-4):
         self.weights = np.random.randn(input_dim + 1) * 0.01
         self.activation = activation
         self.lr = lr
         self.epochs = epochs
+        self.tol = tol
         self.loss_history = []
 
     def _activate(self, z):
         if self.activation == 'logistic':
+            # np.clip prevents overflow errors in exp
+            z = np.clip(z, -250, 250)
             return 1 / (1 + np.exp(-z))
         elif self.activation == 'tanh':
             return np.tanh(z)
@@ -27,30 +45,31 @@ class Perceptron:
 
     def train(self, X, y):
         n_samples = X.shape[0]
-        # Bias Trick: Add a column of 1s to X
         X_aug = np.c_[np.ones(n_samples), X]
         
-        for _ in range(self.epochs):
-            # Forward pass: z = W * X
+        prev_loss = float('inf')
+        
+        for epoch in range(self.epochs):
             z = np.dot(X_aug, self.weights)
             a = self._activate(z)
             
-            # Error = 1/2 * (y_actual - y_pred)^2  <-- Exactly what was taught
             error = y - a
-            self.loss_history.append(np.mean(0.5 * error**2))
+            current_loss = np.mean(0.5 * error**2)
+            self.loss_history.append(current_loss)
             
-            # Derivative of the error w.r.t weights
-            # dz = -(y - y_pred) * activation_derivative
+            # --- CONVERGENCE CRITERION ---
+            if abs(prev_loss - current_loss) < self.tol:
+                # Uncomment the print statement below if you want to see exactly when it stops
+                # print(f"Converged at epoch {epoch}")
+                break
+            prev_loss = current_loss
+            
             dz = -error * self._activate_derivative(a)
-            
-            # dw = X.T * dz
             dw = np.dot(X_aug.T, dz) / n_samples
             
-            # Weight update rule
             self.weights -= self.lr * dw
 
     def predict(self, X):
-        # Bias Trick: Add a column of 1s to X for prediction
         X_aug = np.c_[np.ones(X.shape[0]), X]
         z = np.dot(X_aug, self.weights)
         a = self._activate(z)
@@ -64,11 +83,12 @@ class Perceptron:
 # 2. ONE-VS-ONE MULTICLASS CLASSIFIER
 # ==========================================
 class OVOClassifier:
-    def __init__(self, num_classes=3, activation='logistic', lr=0.1, epochs=1000):
+    def __init__(self, num_classes=3, activation='logistic', lr=0.1, epochs=2000, tol=1e-4):
         self.num_classes = num_classes
         self.activation = activation
         self.lr = lr
         self.epochs = epochs
+        self.tol = tol
         self.models = {}
 
     def train(self, X, y):
@@ -82,7 +102,8 @@ class OVOClassifier:
                 else:
                     y_target = np.where(y_pair == i, 1, -1)
                 
-                model = Perceptron(input_dim=X.shape[1], activation=self.activation, lr=self.lr, epochs=self.epochs)
+                model = Perceptron(input_dim=X.shape[1], activation=self.activation, 
+                                   lr=self.lr, epochs=self.epochs, tol=self.tol)
                 model.train(X_pair, y_target)
                 self.models[(i, j)] = model
 
@@ -102,6 +123,7 @@ class OVOClassifier:
 # ==========================================
 def prepare_data(class_data_list):
     X_train, y_train, X_test, y_test = [], [], [], []
+    
     for label, data in enumerate(class_data_list):
         n_samples = data.shape[0]
         split_idx = int(n_samples * 0.7)
@@ -112,15 +134,26 @@ def prepare_data(class_data_list):
         X_test.append(data[split_idx:])
         y_test.append(np.full(n_samples - split_idx, label))
         
-    return (np.vstack(X_train), np.concatenate(y_train), 
-            np.vstack(X_test), np.concatenate(y_test))
+    X_train = np.vstack(X_train)
+    y_train = np.concatenate(y_train)
+    X_test = np.vstack(X_test)
+    y_test = np.concatenate(y_test)
+    
+    # --- ADDED: FEATURE SCALING (Solves the LS Data issue) ---
+    mean = np.mean(X_train, axis=0)
+    std = np.std(X_train, axis=0)
+    
+    X_train_scaled = (X_train - mean) / (std + 1e-8)
+    X_test_scaled = (X_test - mean) / (std + 1e-8)
+    
+    return X_train_scaled, y_train, X_test_scaled, y_test
 
 def plot_decision_regions(X, y, classifier, title, pair=None):
     plt.figure(figsize=(6, 5))
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.05),
-                         np.arange(y_min, y_max, 0.05))
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.01),
+                         np.arange(y_min, y_max, 0.01))
     
     grid = np.c_[xx.ravel(), yy.ravel()]
     
@@ -133,8 +166,8 @@ def plot_decision_regions(X, y, classifier, title, pair=None):
     plt.contourf(xx, yy, Z, alpha=0.3, cmap='coolwarm')
     plt.scatter(X[:, 0], X[:, 1], c=y, edgecolor='k', cmap='coolwarm', s=20)
     plt.title(title)
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
+    plt.xlabel('Feature 1 (Scaled)')
+    plt.ylabel('Feature 2 (Scaled)')
     plt.tight_layout()
     plt.show()
 
@@ -178,7 +211,6 @@ if __name__ == "__main__":
     X_train_ls, y_train_ls, X_test_ls, y_test_ls = prepare_data([ls_c1, ls_c2, ls_c3])
 
     print("\n" + "="*40 + "\nDATASET 2: NON-LINEARLY SEPARABLE\n" + "="*40)
-    # ADDED skiprows=1 TO FIX THE "First 300 examples..." STRING ERROR
     nls_data = np.loadtxt('Classification/NLS_Group24.txt', skiprows=1)
     nls_c1 = nls_data[:300]
     nls_c2 = nls_data[300:800]
@@ -193,7 +225,8 @@ if __name__ == "__main__":
     for name, X_tr, y_tr, X_te, y_te in datasets:
         for activation in ['logistic', 'tanh']:
             print(f"\nTraining {name} with {activation} activation...")
-            model = OVOClassifier(num_classes=3, activation=activation, lr=0.01, epochs=500)
+            # Note: Increased lr and epochs slightly, though convergence criterion will stop it early
+            model = OVOClassifier(num_classes=3, activation=activation, lr=0.1, epochs=2000, tol=1e-4)
             model.train(X_tr, y_tr)
             
             plt.figure(figsize=(6,4))
