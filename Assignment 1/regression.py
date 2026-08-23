@@ -3,14 +3,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # ==========================================
-# 1. LINEAR PERCEPTRON FOR REGRESSION
+# 1. LINEAR PERCEPTRON FOR REGRESSION 
 # ==========================================
 class LinearPerceptron:
-    def __init__(self, input_dim, lr=0.001, epochs=1000):
-        # Add +1 to input_dim for dummy x0=1 feature
+    # ADDED 'tol' for convergence criterion
+    def __init__(self, input_dim, lr=0.001, epochs=1000, tol=1e-4):
         self.weights = np.random.randn(input_dim + 1) * 0.01
         self.lr = lr
         self.epochs = epochs
+        self.tol = tol
         self.loss_history = []
 
     def train(self, X, y):
@@ -18,14 +19,24 @@ class LinearPerceptron:
         # Bias Trick: Add a column of 1s to X
         X_aug = np.c_[np.ones(n_samples), X]
         
-        for _ in range(self.epochs):
+        prev_loss = float('inf')
+        
+        for epoch in range(self.epochs):
             # Linear activation: y_pred = z
             preds = np.dot(X_aug, self.weights)
             
             # Error = (y_actual - y_pred)
             error = y - preds
+            
             # Error formula taught: 1/2 * error^2
-            self.loss_history.append(np.mean(0.5 * error**2)) 
+            current_loss = np.mean(0.5 * error**2)
+            self.loss_history.append(current_loss)
+            
+            # --- CONVERGENCE CRITERION ---
+            if abs(prev_loss - current_loss) < self.tol:
+                # print(f"Regression converged at epoch {epoch}")
+                break
+            prev_loss = current_loss
             
             # Gradient descent rule derived directly from 1/2 * (y - y_pred)^2
             dw = np.dot(X_aug.T, -error) / n_samples
@@ -78,7 +89,8 @@ if __name__ == "__main__":
         
         X_tr, y_tr, X_te, y_te, X_raw, y_raw, X_m, X_s = preprocess_regression(path)
         
-        model = LinearPerceptron(input_dim=X_tr.shape[1], lr=0.01, epochs=1000)
+        # Added tol=1e-4 here
+        model = LinearPerceptron(input_dim=X_tr.shape[1], lr=0.01, epochs=1000, tol=1e-4)
         model.train(X_tr, y_tr)
         
         plt.figure(figsize=(5, 3))
