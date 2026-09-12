@@ -1,0 +1,61 @@
+CS601T: Deep Learning - Programming Assignment 2
+Group 24
+WE HAVE PROVIDED BOTH JUPYTER FILES AND PYTHON FILES
+You can check the jupyter files if you are not able to run the code.
+
+DATASET PLACEMENT INSTRUCTIONS (IMPORTANT)
+
+data files are excluded from this submission. 
+To run the code successfully, please place the 'Classification' and 
+'Regression' dataset folders directly into your Main folder (alongside 
+the .py files).
+
+EXPECTED FOLDER STRUCTURE (Before Running)
+MainFolder/
+├── Classification/              <-- Please place data folder here
+│   ├── LS_Group24/
+│   │   ├── Class1.txt
+│   │   ├── Class2.txt
+│   │   └── Class3.txt
+│   └── NLS_Group24.txt
+├── Regression/                  <-- Please place data folder here
+│   ├── UnivariateData/
+│   │   └── 24.csv
+│   └── BivariateData/
+│       └── 24.csv
+├── classification.py            <--
+├── regression.py                   |
+├── Classification.ipynb            |<--uploaded files these are
+├── Regression.ipynb                |
+└── README.txt                   <--
+
+PREREQUISITES & DEPENDENCIES
+
+This code was written in Python 3. No machine learning frameworks 
+(like scikit-learn or TensorFlow) were used, as per the instructions.
+
+Please ensure the following standard libraries are installed:
+- numpy
+- pandas
+- matplotlib
+
+You can install them via:
+pip install numpy pandas matplotlib
+
+HOW TO RUN THE CODE
+
+To ensure the relative file paths work correctly, please run the 
+scripts from the ROOT DIRECTORY of this unzipped folder.
+
+1. Open your terminal or command prompt.
+2. Navigate into the unzipped folder:
+   cd path/to/MainFolder
+
+3. To run the Classification tasks:
+   python classification.py
+
+4. To run the Regression tasks:
+   python regression.py
+
+NOTE: The scripts will automatically generate and save all the required plots at plot/classification or plot/regression.
+
